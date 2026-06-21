@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>World Time Dashboard</title>
+
+
+<link rel="stylesheet" href="style.css">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+
+</head>
+<body>
+
+<div class="container">
+
+
+<!-- MARKET STATUS BAR -->
+
+<section class="market-banner">
+    <div id="market-banner-status">
+        🟢 FOREX MARKET OPEN
+    </div>
+
+    <div id="market-banner-info">
+        London + New York Active
+    </div>
+</section>
+
+<!-- HEADER -->
+
+<header>
+    <h1>🌍 World Time Dashboard</h1>
+    <p>Live Global Clock & Forex Sessions</p>
+</header>
+
+<!-- WORLD CLOCKS -->
+
+<section class="clocks-section">
+
+    <!-- Bangladesh -->
+
+    <div class="clock-card bd-card">
+
+        <h2>🇧🇩 Bangladesh</h2>
+        <p class="timezone">Asia/Dhaka</p>
+
+        <div class="day" id="bd-day"></div>
+        <div class="date" id="bd-date"></div>
+        <div class="time" id="bd-time"></div>
+
+        <div class="status" id="bd-status"></div>
+
+        <div class="utc">
+            UTC +06:00
+        </div>
+
+    </div>
+
+    <!-- London -->
+
+    <div class="clock-card london-card">
+
+        <h2>🇬🇧 London</h2>
+        <p class="timezone">Europe/London</p>
+
+        <div class="day" id="ldn-day"></div>
+        <div class="date" id="ldn-date"></div>
+        <div class="time" id="ldn-time"></div>
+
+        <div class="status" id="ldn-status"></div>
+
+        <div class="utc">
+            UTC +00:00 / +01:00
+        </div>
+
+    </div>
+
+    <!-- New York -->
+
+    <div class="clock-card ny-card">
+
+        <h2>🇺🇸 New York</h2>
+        <p class="timezone">America/New_York</p>
+
+        <div class="day" id="ny-day"></div>
+        <div class="date" id="ny-date"></div>
+        <div class="time" id="ny-time"></div>
+
+        <div class="status" id="ny-status"></div>
+
+        <div class="utc">
+            UTC -05:00 / -04:00
+        </div>
+
+    </div>
+
+</section>
+
+<!-- FOREX SESSION STATUS -->
+
+<section class="market-card">
+
+    <h2>📈 Forex Market Sessions</h2>
+
+    <div class="sessions">
+
+        <div class="session-row">
+            <span>🇦🇺 Sydney</span>
+            <span id="sydney-status"></span>
+        </div>
+
+        <div class="session-row">
+            <span>🇯🇵 Tokyo</span>
+            <span id="tokyo-status"></span>
+        </div>
+
+        <div class="session-row">
+            <span>🇬🇧 London</span>
+            <span id="london-status"></span>
+        </div>
+
+        <div class="session-row">
+            <span>🇺🇸 New York</span>
+            <span id="newyork-status"></span>
+        </div>
+
+    </div>
+
+</section>
+
+<!-- ACTIVE + NEXT SESSION -->
+
+<section class="info-grid">
+
+    <div class="info-card">
+
+        <h3>🔥 Active Session</h3>
+
+        <div id="active-session">
+            Loading...
+        </div>
+
+    </div>
+
+    <div class="info-card">
+
+        <h3>⏰ Next Session</h3>
+
+        <div id="next-session">
+            Loading...
+        </div>
+
+    </div>
+
+</section>
+
+<!-- OVERLAP -->
+
+<section class="market-card">
+
+    <h2>⚡ London - New York Overlap</h2>
+
+    <div id="overlap-status">
+        Loading...
+    </div>
+
+</section>
+
+<!-- UTC CLOCK -->
+
+<section class="market-card">
+
+    <h2>🌐 UTC Time</h2>
+
+    <div id="utc-live-time">
+        Loading...
+    </div>
+
+</section>
+
+<!-- FOOTER -->
+
+<footer>
+    <p>
+        World Time Dashboard • Built for Traders
+    </p>
+</footer>
+
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
