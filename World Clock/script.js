@@ -172,14 +172,34 @@ function updateSessions() {
         return;
     }
 
-    const current = getUTCMinutes();
+    const now = new Date();
 
-    const sessions = {
-        Sydney: { start: 1320, end: 420 },
-        Tokyo: { start: 0, end: 540 },
-        London: { start: 480, end: 1020 },
-        NewYork: { start: 780, end: 1320 }
-    };
+const current =
+    now.getHours() * 60 +
+    now.getMinutes();
+
+const sessions = {
+
+    Sydney: {
+        start: 240,   // 04:00 AM
+        end: 780      // 01:00 PM
+    },
+
+    Tokyo: {
+        start: 360,   // 06:00 AM
+        end: 900      // 03:00 PM
+    },
+
+    London: {
+        start: 780,   // 01:00 PM
+        end: 1320     // 10:00 PM
+    },
+
+    NewYork: {
+        start: 1080,  // 06:00 PM
+        end: 180      // 03:00 AM
+    }
+};
 
     const statusMap = {
         Sydney: "sydney-status",
