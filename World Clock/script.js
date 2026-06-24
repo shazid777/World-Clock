@@ -1,352 +1,226 @@
-function getNextForexOpen() {
-    const now = new Date();
-    const nextOpen = new Date(now);
+// World Time Dashboard - Final Stable Version
+const WORLD_TIME_API = "https://worldtimeapi.org/api/timezone/Etc/UTC";
 
-    nextOpen.setUTCHours(22, 0, 0, 0);
+let serverOffset = 0;
+let lastSync = null;
 
-    while (nextOpen <= now || nextOpen.getUTCDay() !== 0) {
-        nextOpen.setUTCDate(nextOpen.getUTCDate() + 1);
-    }
+const SESSIONS = [
+  { name: "Sydney", start: 22, end: 7 },
+  { name: "Tokyo", start: 0, end: 9 },
+  { name: "London", start: 8, end: 17 },
+  { name: "New York", start: 13, end: 22 }
+];
 
-    return nextOpen;
+window.addEventListener("load", () => {
+  const loading = document.getElementById("loading-screen");
+  if (loading) loading.style.display = "none";
+
+  syncServerTime();
+  updateDashboard();
+
+  setInterval(updateDashboard, 1000);
+  setInterval(syncServerTime, 600000);
+});
+
+async function syncServerTime() {
+  try {
+    const res = await fetch(WORLD_TIME_API);
+    if (!res.ok) throw new Error("API failed");
+
+    const data = await res.json();
+    const serverTime = new Date(data.datetime);
+
+    serverOffset = serverTime.getTime() - Date.now();
+    lastSync = new Date();
+
+    setText("sync-text", "Connected");
+  } catch {
+    serverOffset = 0;
+    setText("sync-text", "Browser Time");
+  }
 }
 
-function updateClock(timeZone, dayId, dateId, timeId, statusId) {
-    const now = new Date();
-
-    const day = new Intl.DateTimeFormat("en-US", {
-        timeZone,
-        weekday: "long"
-    }).format(now);
-
-    const date = new Intl.DateTimeFormat("en-US", {
-        timeZone,
-        month: "long",
-        day: "numeric",
-        year: "numeric"
-    }).format(now);
-
-    const time = new Intl.DateTimeFormat("en-US", {
-        timeZone,
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: true
-    }).format(now);
-
-    const hour = Number(
-        new Intl.DateTimeFormat("en-US", {
-            timeZone,
-            hour: "numeric",
-            hour12: false
-        }).format(now)
-    );
-
-    document.getElementById(dayId).textContent = day;
-    document.getElementById(dateId).textContent = date;
-    document.getElementById(timeId).textContent = time;
-
-    document.getElementById(statusId).textContent =
-        hour >= 6 && hour < 18
-            ? "☀️ Day"
-            : "🌙 Night";
+function getUtcNow() {
+  return new Date(Date.now() + serverOffset);
 }
 
-function updateUTCTime() {
-    const now = new Date();
+function updateDashboard() {
+  const utcNow = getUtcNow();
 
-    const utcTime = now.toLocaleTimeString("en-US", {
-        timeZone: "UTC",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: true
-    });
+  setText("bd-timezone", "UTC +06:00");
+  setText("ldn-timezone", "UTC +01:00");
+  setText("ny-timezone", "UTC -04:00");
 
-    const utcDate = now.toLocaleDateString("en-US", {
-        timeZone: "UTC",
-        weekday: "long",
-        month: "long",
-        day: "numeric",
-        year: "numeric"
-    });
+  updateClockCard(utcNow, "Asia/Dhaka", "bd");
+  updateClockCard(utcNow, "Europe/London", "ldn");
+  updateClockCard(utcNow, "America/New_York", "ny");
 
-    const utcElement = document.getElementById("utc-live-time");
-
-    if (utcElement) {
-        utcElement.innerHTML = `
-            ${utcDate}
-            <br><br>
-            ${utcTime}
-        `;
-    }
+  updateUtcCard(utcNow);
+  updateForex(utcNow);
+  updateLastSync();
 }
 
-function getUTCMinutes() {
-    const now = new Date();
-    return now.getUTCHours() * 60 + now.getUTCMinutes();
+function updateClockCard(utcDate, zone, prefix) {
+  const local = new Date(
+    utcDate.toLocaleString("en-US", { timeZone: zone })
+  );
+
+  setText(`${prefix}-time`, local.toLocaleTimeString("en-US", { hour12: true }));
+  setText(`${prefix}-day`, local.toLocaleDateString("en-US", { weekday: "long" }));
+  setText(`${prefix}-date`, local.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric"
+  }));
+
+  setText(`${prefix}-daynight`,
+    local.getHours() >= 6 && local.getHours() < 18 ? "☀️ Day" : "🌙 Night"
+  );
 }
 
-function isSessionOpen(start, end, current) {
-    if (start > end) {
-        return current >= start || current < end;
-    }
-
-    return current >= start && current < end;
+function updateUtcCard(date) {
+  setText("utc-time", date.toLocaleTimeString("en-US",{hour12:true,timeZone:"UTC"}));
+  setText("utc-day", date.toLocaleDateString("en-US",{weekday:"long",timeZone:"UTC"}));
+  setText("utc-date", date.toLocaleDateString("en-US",{
+    year:"numeric",month:"long",day:"numeric",timeZone:"UTC"
+  }));
 }
 
-function minutesUntil(target, current) {
-    let diff = target - current;
+function updateForex(utcNow) {
+  const day = utcNow.getUTCDay();
+  const hour = utcNow.getUTCHours();
 
-    if (diff < 0) {
-        diff += 1440;
-    }
+  if (day === 6 || (day === 0 && hour < 22)) {
+    updateBanner(false, "Weekend Shutdown");
 
-    return diff;
-}
+    setText("active-session-name","FOREX CLOSED");
+    setText("active-session-countdown","--");
 
-function formatCountdown(minutes) {
-    const h = Math.floor(minutes / 60);
-    const m = minutes % 60;
+    setText("next-session-name","Market Reopens");
+    setText("next-session-countdown","--");
 
-    return `${h}h ${m}m`;
-}
+    setText("london-session-status","CLOSED");
+    setText("london-session-label","Starts In");
+    setText("london-session-countdown","--");
 
-function updateSessions() {
-    const now = new Date();
+    return;
+  }
 
-    const utcDay = now.getUTCDay();
-    const utcHour = now.getUTCHours();
+  const active = [];
 
-    const bannerStatus = document.getElementById("market-banner-status");
-    const bannerInfo = document.getElementById("market-banner-info");
+  SESSIONS.forEach(session => {
+    const open = isSessionOpen(hour, session);
 
-    const marketClosed =
-        utcDay === 6 ||
-        (utcDay === 0 && utcHour < 22);
-
-    if (marketClosed) {
-        document.getElementById("sydney-status").innerHTML =
-            '<span class="closed">CLOSED</span>';
-
-        document.getElementById("tokyo-status").innerHTML =
-            '<span class="closed">CLOSED</span>';
-
-        document.getElementById("london-status").innerHTML =
-            '<span class="closed">CLOSED</span>';
-
-        document.getElementById("newyork-status").innerHTML =
-            '<span class="closed">CLOSED</span>';
-
-        document.getElementById("active-session").innerHTML =
-            "🛑 Forex Market Closed<br>Weekend Shutdown";
-
-        document.getElementById("overlap-status").innerHTML =
-            "🛑 No Overlap<br>Weekend";
-
-        const nextOpen = getNextForexOpen();
-
-        const diff = nextOpen - now;
-
-        const totalSeconds = Math.floor(diff / 1000);
-
-        const days = Math.floor(totalSeconds / 86400);
-        const hours = Math.floor((totalSeconds % 86400) / 3600);
-        const mins = Math.floor((totalSeconds % 3600) / 60);
-        const secs = totalSeconds % 60;
-
-        document.getElementById("next-session").innerHTML = `
-            Market Reopens In
-            <br>
-            ${days}d ${hours}h ${mins}m ${secs}s
-        `;
-
-        if (bannerStatus) {
-            bannerStatus.innerHTML = "🛑 FOREX MARKET CLOSED";
-        }
-
-        if (bannerInfo) {
-            bannerInfo.innerHTML = "Weekend Shutdown";
-        }
-
-        return;
-    }
-
-    const now = new Date();
-
-const current =
-    now.getHours() * 60 +
-    now.getMinutes();
-
-const sessions = {
-
-    Sydney: {
-        start: 240,   // 04:00 AM
-        end: 780      // 01:00 PM
-    },
-
-    Tokyo: {
-        start: 360,   // 06:00 AM
-        end: 900      // 03:00 PM
-    },
-
-    London: {
-        start: 780,   // 01:00 PM
-        end: 1320     // 10:00 PM
-    },
-
-    NewYork: {
-        start: 1080,  // 06:00 PM
-        end: 180      // 03:00 AM
-    }
-};
-
-    const statusMap = {
-        Sydney: "sydney-status",
-        Tokyo: "tokyo-status",
-        London: "london-status",
-        NewYork: "newyork-status"
+    const map = {
+      "Sydney":"sydney-status",
+      "Tokyo":"tokyo-status",
+      "London":"london-status",
+      "New York":"newyork-status"
     };
 
-    let active = [];
+    const el = document.getElementById(map[session.name]);
 
-    for (const session in sessions) {
-        const open = isSessionOpen(
-            sessions[session].start,
-            sessions[session].end,
-            current
-        );
-
-        const el = document.getElementById(statusMap[session]);
-
-        if (open) {
-            el.innerHTML = '<span class="open">OPEN</span>';
-            active.push(session);
-        } else {
-            el.innerHTML = '<span class="closed">CLOSED</span>';
-        }
+    if (el) {
+      el.textContent = open ? "OPEN" : "CLOSED";
+      el.className = "session-status " + (open ? "open" : "closed");
     }
 
-    if (active.length) {
-        let closestClose = Infinity;
+    if (open) active.push(session);
+  });
 
-        active.forEach(name => {
-            const end = sessions[name].end;
-
-            const remaining =
-                end > current
-                    ? end - current
-                    : (1440 - current) + end;
-
-            if (remaining < closestClose) {
-                closestClose = remaining;
-            }
-        });
-
-        document.getElementById("active-session").innerHTML = `
-            ${active.join(" + ")}
-            <br>
-            Closes In: ${formatCountdown(closestClose)}
-        `;
-
-        if (bannerStatus) {
-            bannerStatus.innerHTML = "🟢 FOREX MARKET OPEN";
-        }
-
-        if (bannerInfo) {
-            bannerInfo.innerHTML =
-                active.join(" + ") + " Active";
-        }
-    }
-
-    let nextName = "";
-    let nextTime = Infinity;
-
-    for (const session in sessions) {
-        if (
-            !isSessionOpen(
-                sessions[session].start,
-                sessions[session].end,
-                current
-            )
-        ) {
-            const until = minutesUntil(
-                sessions[session].start,
-                current
-            );
-
-            if (until < nextTime) {
-                nextTime = until;
-                nextName = session;
-            }
-        }
-    }
-
-    document.getElementById("next-session").innerHTML = `
-        ${nextName}
-        <br>
-        Starts In: ${formatCountdown(nextTime)}
-    `;
-
-    const overlapStart = 780;
-    const overlapEnd = 1020;
-
-    if (
-        current >= overlapStart &&
-        current < overlapEnd
-    ) {
-        document.getElementById("overlap-status").innerHTML = `
-            🟢 OPEN NOW
-            <br>
-            Ends In:
-            ${formatCountdown(overlapEnd - current)}
-        `;
-    } else {
-        let startIn;
-
-        if (current < overlapStart) {
-            startIn = overlapStart - current;
-        } else {
-            startIn = (1440 - current) + overlapStart;
-        }
-
-        document.getElementById("overlap-status").innerHTML = `
-            🔴 CLOSED
-            <br>
-            Starts In:
-            ${formatCountdown(startIn)}
-        `;
-    }
+  updateBanner(true, active.map(x => x.name).join(" + "));
+  updateActiveSessionCard(hour, active);
+  updateNextSessionCard(hour);
+  updateOverlapCard(hour);
+  updateLondonSessionCard(hour);
 }
 
-function refresh() {
-    updateClock(
-        "Asia/Dhaka",
-        "bd-day",
-        "bd-date",
-        "bd-time",
-        "bd-status"
-    );
+function updateActiveSessionCard(hour, active) {
+  if (!active.length) return;
 
-    updateClock(
-        "Europe/London",
-        "ldn-day",
-        "ldn-date",
-        "ldn-time",
-        "ldn-status"
-    );
+  setText("active-session-name", active.map(x => x.name).join(" + "));
 
-    updateClock(
-        "America/New_York",
-        "ny-day",
-        "ny-date",
-        "ny-time",
-        "ny-status"
-    );
+  let nearestClose = 24;
 
-    updateSessions();
-    updateUTCTime();
+  active.forEach(s => {
+    let closeHour = s.end;
+    if (closeHour <= hour) closeHour += 24;
+    nearestClose = Math.min(nearestClose, closeHour - hour);
+  });
+
+  setText("active-session-countdown", `${nearestClose}h 00m`);
 }
 
-refresh();
-setInterval(refresh, 1000);
+function updateNextSessionCard(hour) {
+  let next = null;
+  let wait = 24;
+
+  SESSIONS.forEach(s => {
+    let diff = s.start - hour;
+    if (diff <= 0) diff += 24;
+
+    if (diff < wait) {
+      wait = diff;
+      next = s;
+    }
+  });
+
+  if (next) {
+    setText("next-session-name", next.name);
+    setText("next-session-countdown", `${wait}h 00m`);
+  }
+}
+
+function updateLondonSessionCard(hour) {
+  const isOpen = hour >= 8 && hour < 17;
+
+  setText("london-session-status", isOpen ? "OPEN" : "CLOSED");
+  setText("london-session-label", isOpen ? "Closes In" : "Starts In");
+
+  if (isOpen) {
+    setText("london-session-countdown", `${17 - hour}h 00m`);
+  } else {
+    let hoursUntil = 8 - hour;
+    if (hoursUntil <= 0) hoursUntil += 24;
+    setText("london-session-countdown", `${hoursUntil}h 00m`);
+  }
+}
+
+function updateOverlapCard(hour) {
+  const open = hour >= 13 && hour < 17;
+
+  setText("overlap-status", open ? "OPEN NOW" : "CLOSED");
+  setText("overlap-label", open ? "Ends In" : "Starts In");
+
+  if (open) {
+    setText("overlap-countdown", `${17-hour}h 00m`);
+  } else {
+    let start = 13 - hour;
+    if (start <= 0) start += 24;
+    setText("overlap-countdown", `${start}h 00m`);
+  }
+}
+
+function updateBanner(open,msg){
+  const banner = document.getElementById("market-banner");
+  if (!banner) return;
+
+  banner.innerHTML = open
+    ? `<div class="banner-status">🟢 FOREX MARKET OPEN</div><div class="banner-message">${msg}</div>`
+    : `<div class="banner-status">🛑 FOREX MARKET CLOSED</div><div class="banner-message">${msg}</div>`;
+}
+
+function isSessionOpen(hour,s){
+  if (s.start < s.end) return hour >= s.start && hour < s.end;
+  return hour >= s.start || hour < s.end;
+}
+
+function updateLastSync(){
+  if (!lastSync) return;
+  setText("last-sync","Last Sync: " + lastSync.toLocaleTimeString());
+}
+
+function setText(id,value){
+  const el = document.getElementById(id);
+  if (el) el.textContent = value;
+}
