@@ -1,199 +1,331 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>World Time Dashboard</title>
 
+    <link rel="stylesheet" href="style.css">
 
-<link rel="stylesheet" href="style.css">
-
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
-
+    <meta name="theme-color" content="#0b1020">
 </head>
 <body>
 
-<div class="container">
-
-
-<!-- MARKET STATUS BAR -->
-
-<section class="market-banner">
-    <div id="market-banner-status">
-        🟢 FOREX MARKET OPEN
+    <!-- =========================
+         LOADING SCREEN
+    ========================== -->
+    <div id="loading-screen">
+        <div class="loader"></div>
+        <h2>Connecting to Time Server...</h2>
+        <p>Syncing with timeapi.io</p>
     </div>
 
-    <div id="market-banner-info">
-        London + New York Active
+    <!-- =========================
+         MAIN APP
+    ========================== -->
+    <div class="container">
+
+        <!-- =========================
+             HEADER
+        ========================== -->
+        <header>
+
+            <div id="market-banner" class="market-banner">
+                <div class="banner-status">
+                    🟢 FOREX MARKET CLOCK
+                </div>
+
+                <div class="banner-message">
+                    Loading market status...
+                </div>
+            </div>
+
+            <div class="top-status-bar">
+
+                <div class="dashboard-title">
+                    <h1>🌍 World Time Dashboard</h1>
+                    <span>Server Powered Time Tracking</span>
+                </div>
+
+                <div id="sync-status" class="sync-status connected">
+                    <span class="status-dot"></span>
+                    <span id="sync-text">Connected</span>
+                </div>
+
+            </div>
+
+        </header>
+
+        <!-- =========================
+             WORLD CLOCKS
+        ========================== -->
+        <section class="clock-grid">
+
+            <!-- Bangladesh -->
+            <article class="clock-card bangladesh">
+
+                <div class="card-header">
+                    <div>
+                        <h2>🇧🇩 Bangladesh</h2>
+                        <span id="bd-timezone">
+                            UTC +06:00
+                        </span>
+                    </div>
+
+                    <div id="bd-daynight" class="day-night">
+                        ☀️ Day
+                    </div>
+                </div>
+
+                <div id="bd-time" class="clock-time">
+                    00:00:00 AM
+                </div>
+
+                <div id="bd-day" class="clock-day">
+                    Monday
+                </div>
+
+                <div id="bd-date" class="clock-date">
+                    June 24, 2026
+                </div>
+
+            </article>
+
+            <!-- London -->
+            <article class="clock-card london">
+
+                <div class="card-header">
+                    <div>
+                        <h2>🇬🇧 London</h2>
+                        <span id="ldn-timezone">
+                            BST
+                        </span>
+                    </div>
+
+                    <div id="ldn-daynight" class="day-night">
+                        ☀️ Day
+                    </div>
+                </div>
+
+                <div id="ldn-time" class="clock-time">
+                    00:00:00 AM
+                </div>
+
+                <div id="ldn-day" class="clock-day">
+                    Monday
+                </div>
+
+                <div id="ldn-date" class="clock-date">
+                    June 24, 2026
+                </div>
+
+            </article>
+
+            <!-- New York -->
+            <article class="clock-card newyork">
+
+                <div class="card-header">
+                    <div>
+                        <h2>🇺🇸 New York</h2>
+                        <span id="ny-timezone">
+                            EDT
+                        </span>
+                    </div>
+
+                    <div id="ny-daynight" class="day-night">
+                        🌙 Night
+                    </div>
+                </div>
+
+                <div id="ny-time" class="clock-time">
+                    00:00:00 AM
+                </div>
+
+                <div id="ny-day" class="clock-day">
+                    Monday
+                </div>
+
+                <div id="ny-date" class="clock-date">
+                    June 24, 2026
+                </div>
+
+            </article>
+
+        </section>
+
+        <!-- =========================
+             FOREX SESSIONS
+        ========================== -->
+        <section class="section-title">
+            <h2>📈 Forex Session Tracker</h2>
+        </section>
+
+        <section class="session-grid">
+
+            <article class="session-card">
+                <h3>Sydney</h3>
+                <div id="sydney-status" class="session-status closed">
+                    CLOSED
+                </div>
+            </article>
+
+            <article class="session-card">
+                <h3>Tokyo</h3>
+                <div id="tokyo-status" class="session-status closed">
+                    CLOSED
+                </div>
+            </article>
+
+            <article class="session-card">
+                <h3>London</h3>
+                <div id="london-status" class="session-status closed">
+                    CLOSED
+                </div>
+            </article>
+
+            <article class="session-card">
+                <h3>New York</h3>
+                <div id="newyork-status" class="session-status closed">
+                    CLOSED
+                </div>
+            </article>
+
+        </section>
+
+        <!-- =========================
+             ANALYTICS
+        ========================== -->
+        <section class="analytics-grid">
+
+            <!-- Active Session -->
+            <article class="info-card">
+
+                <div class="info-card-title">
+                    🔥 Active Session
+                </div>
+
+                <div id="active-session-name" class="info-main">
+                    Waiting...
+                </div>
+
+                <div class="info-label">
+                    Closes In
+                </div>
+
+                <div id="active-session-countdown" class="info-countdown">
+                    --h --m
+                </div>
+
+            </article>
+            <article class="info-card">
+
+    <div class="info-card-title">
+        🇬🇧 London Session
     </div>
-</section>
 
-<!-- HEADER -->
+    <div id="london-session-status" class="info-main">
+        CLOSED
+    </div>
 
-<header>
-    <h1>🌍 World Time Dashboard</h1>
-    <p>Live Global Clock & Forex Sessions</p>
-</header>
+    <div id="london-session-label" class="info-label">
+        Starts In
+    </div>
 
-<!-- WORLD CLOCKS -->
+    <div id="london-session-countdown" class="info-countdown">
+        --h --m
+    </div>
 
-<section class="clocks-section">
+</article>
 
-    <!-- Bangladesh -->
+            <!-- Next Session -->
+            <article class="info-card">
 
-    <div class="clock-card bd-card">
+                <div class="info-card-title">
+                    ⏰ Next Session
+                </div>
 
-        <h2>🇧🇩 Bangladesh</h2>
-        <p class="timezone">Asia/Dhaka</p>
+                <div id="next-session-name" class="info-main">
+                    Waiting...
+                </div>
 
-        <div class="day" id="bd-day"></div>
-        <div class="date" id="bd-date"></div>
-        <div class="time" id="bd-time"></div>
+                <div class="info-label">
+                    Starts In
+                </div>
 
-        <div class="status" id="bd-status"></div>
+                <div id="next-session-countdown" class="info-countdown">
+                    --h --m
+                </div>
 
-        <div class="utc">
-            UTC +06:00
-        </div>
+            </article>
+
+            <!-- Overlap -->
+            <article class="info-card">
+
+                <div class="info-card-title">
+                    ⚡ London–New York Overlap
+                </div>
+
+                <div id="overlap-status" class="info-main">
+                    CLOSED
+                </div>
+
+                <div id="overlap-label" class="info-label">
+                    Starts In
+                </div>
+
+                <div id="overlap-countdown" class="info-countdown">
+                    --h --m
+                </div>
+
+            </article>
+
+        </section>
+
+        <!-- =========================
+             UTC CLOCK
+        ========================== -->
+        <section class="utc-wrapper">
+
+            <article class="utc-card">
+
+                <div class="utc-title">
+                    🌐 UTC Time
+                </div>
+
+                <div id="utc-day" class="utc-day">
+                    Monday
+                </div>
+
+                <div id="utc-date" class="utc-date">
+                    June 24, 2026
+                </div>
+
+                <div id="utc-time" class="utc-time">
+                    00:00:00 AM
+                </div>
+
+            </article>
+
+        </section>
+
+        <!-- =========================
+             FOOTER
+        ========================== -->
+        <footer>
+
+            <div id="last-sync">
+                Last Sync: --
+            </div>
+
+            <div class="footer-text">
+                Powered by timeapi.io • Forex Session Tracker
+            </div>
+
+        </footer>
 
     </div>
 
-    <!-- London -->
-
-    <div class="clock-card london-card">
-
-        <h2>🇬🇧 London</h2>
-        <p class="timezone">Europe/London</p>
-
-        <div class="day" id="ldn-day"></div>
-        <div class="date" id="ldn-date"></div>
-        <div class="time" id="ldn-time"></div>
-
-        <div class="status" id="ldn-status"></div>
-
-        <div class="utc">
-            UTC +00:00 / +01:00
-        </div>
-
-    </div>
-
-    <!-- New York -->
-
-    <div class="clock-card ny-card">
-
-        <h2>🇺🇸 New York</h2>
-        <p class="timezone">America/New_York</p>
-
-        <div class="day" id="ny-day"></div>
-        <div class="date" id="ny-date"></div>
-        <div class="time" id="ny-time"></div>
-
-        <div class="status" id="ny-status"></div>
-
-        <div class="utc">
-            UTC -05:00 / -04:00
-        </div>
-
-    </div>
-
-</section>
-
-<!-- FOREX SESSION STATUS -->
-
-<section class="market-card">
-
-    <h2>📈 Forex Market Sessions</h2>
-
-    <div class="sessions">
-
-        <div class="session-row">
-            <span>🇦🇺 Sydney</span>
-            <span id="sydney-status"></span>
-        </div>
-
-        <div class="session-row">
-            <span>🇯🇵 Tokyo</span>
-            <span id="tokyo-status"></span>
-        </div>
-
-        <div class="session-row">
-            <span>🇬🇧 London</span>
-            <span id="london-status"></span>
-        </div>
-
-        <div class="session-row">
-            <span>🇺🇸 New York</span>
-            <span id="newyork-status"></span>
-        </div>
-
-    </div>
-
-</section>
-
-<!-- ACTIVE + NEXT SESSION -->
-
-<section class="info-grid">
-
-    <div class="info-card">
-
-        <h3>🔥 Active Session</h3>
-
-        <div id="active-session">
-            Loading...
-        </div>
-
-    </div>
-
-    <div class="info-card">
-
-        <h3>⏰ Next Session</h3>
-
-        <div id="next-session">
-            Loading...
-        </div>
-
-    </div>
-
-</section>
-
-<!-- OVERLAP -->
-
-<section class="market-card">
-
-    <h2>⚡ London - New York Overlap</h2>
-
-    <div id="overlap-status">
-        Loading...
-    </div>
-
-</section>
-
-<!-- UTC CLOCK -->
-
-<section class="market-card">
-
-    <h2>🌐 UTC Time</h2>
-
-    <div id="utc-live-time">
-        Loading...
-    </div>
-
-</section>
-
-<!-- FOOTER -->
-
-<footer>
-    <p>
-        World Time Dashboard • Built for Traders
-    </p>
-</footer>
-
-</div>
-
-<script src="script.js"></script>
+    <script src="app.js"></script>
 
 </body>
 </html>
